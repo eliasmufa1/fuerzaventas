@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FuerzaVentas · Lima</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rojo:#E8232A; --rojo-dark:#b81a20;
+    --amarillo:#F5C518; --verde:#00C48C; --azul:#1A73E8;
+    --morado:#9B59B6; --naranja:#E67E22; --celeste:#0EA5E9; --rosa:#EC4899;
+    --trad:#F59E0B; --mod:#6366F1;
+    --norte:#EF4444; --sur:#10B981; --este:#F59E0B; --centro:#8B5CF6; --oeste:#3B82F6;
+    --bg:#0F0F0F; --surface:#1A1A1A; --surface2:#242424; --border:#2E2E2E;
+    --text:#F0F0F0; --muted:#888;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  header{background:var(--surface);border-bottom:2px solid var(--rojo);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;}
+  .logo span{color:var(--rojo);}
+  .date-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 16px;font-size:13px;color:var(--muted);}
+  .tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 28px;overflow-x:auto;}
+  .tab{padding:14px 22px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;user-select:none;white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--rojo);border-bottom-color:var(--rojo);}
+  .view{display:none;padding:28px;}
+  .view.active{display:block;}
+  .selector-bar{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap;}
+  .selector-bar label{font-size:14px;color:var(--muted);}
+  select,input[type="text"],input[type="number"]{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border .2s;}
+  select:focus,input:focus{border-color:var(--rojo);}
+  .period-toggle{display:inline-flex;background:var(--surface2);border-radius:8px;padding:3px;gap:2px;}
+  .period-btn{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .2s;user-select:none;}
+  .period-btn.active{background:var(--rojo);color:white;}
+  .btn{background:var(--rojo);color:white;border:none;padding:10px 20px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .btn:hover{background:var(--rojo-dark);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{border-color:var(--text);color:var(--text);background:transparent;}
+  .btn-sm{padding:7px 16px;font-size:13px;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-green{background:rgba(0,196,140,.15);color:var(--verde);}
+  .badge-yellow{background:rgba(245,197,24,.15);color:var(--amarillo);}
+  .badge-red{background:rgba(232,35,42,.15);color:var(--rojo);}
+  .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px;}
+  .kpi-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:14px;}
+  .kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+  .kpi-section-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;margin-top:4px;display:flex;align-items:center;gap:8px;}
+  .kpi-section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+  .kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .kpi-card.ventas::before{background:var(--rojo);}
+  .kpi-card.clientes::before{background:var(--amarillo);}
+  .kpi-card.skus::before{background:var(--verde);}
+  .kpi-card.efectividad::before{background:var(--celeste);}
+  .kpi-card.ticket::before{background:var(--morado);}
+  .kpi-card.nuevos::before{background:var(--rosa);}
+  .kpi-card.devoluciones::before{background:var(--naranja);}
+  .kpi-card.quiebre::before{background:#F97316;}
+  .kpi-card.perfectos::before{background:var(--verde);}
+  .kpi-card.canal-trad::before{background:var(--trad);}
+  .kpi-card.canal-mod::before{background:var(--mod);}
+  .kpi-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .kpi-icon{font-size:20px;position:absolute;top:18px;right:16px;opacity:.35;}
+  .kpi-value{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;margin-bottom:4px;}
+  .kpi-card.ventas .kpi-value{color:var(--rojo);}
+  .kpi-card.clientes .kpi-value{color:var(--amarillo);}
+  .kpi-card.skus .kpi-value{color:var(--verde);}
+  .kpi-card.efectividad .kpi-value{color:var(--celeste);}
+  .kpi-card.ticket .kpi-value{color:var(--morado);}
+  .kpi-card.nuevos .kpi-value{color:var(--rosa);}
+  .kpi-card.devoluciones .kpi-value{color:var(--naranja);}
+  .kpi-card.quiebre .kpi-value{color:#F97316;}
+  .kpi-card.perfectos .kpi-value{color:var(--verde);}
+  .kpi-card.canal-trad .kpi-value{color:var(--trad);}
+  .kpi-card.canal-mod .kpi-value{color:var(--mod);}
+  .kpi-sub{font-size:11px;color:var(--muted);margin-bottom:12px;font-style:italic;}
+  .kpi-sub strong{color:var(--text);font-style:normal;}
+  .progress-track{background:var(--surface2);border-radius:4px;height:5px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1);}
+  .ventas .progress-fill{background:var(--rojo);}
+  .clientes .progress-fill{background:var(--amarillo);}
+  .skus .progress-fill{background:var(--verde);}
+  .efectividad .progress-fill{background:var(--celeste);}
+  .ticket .progress-fill{background:var(--morado);}
+  .nuevos .progress-fill{background:var(--rosa);}
+  .devoluciones .progress-fill{background:var(--naranja);}
+  .quiebre .progress-fill{background:#F97316;}
+  .perfectos .progress-fill{background:var(--verde);}
+  .canal-trad .progress-fill{background:var(--trad);}
+  .canal-mod .progress-fill{background:var(--mod);}
+  .progress-pct{font-size:10px;color:var(--muted);margin-top:4px;text-align:right;}
+  .input-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:24px;}
+  .input-section h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .input-group label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;}
+  .input-group input{width:100%;}
+  .input-hint{font-size:11px;color:var(--muted);font-style:italic;margin-top:-8px;margin-bottom:12px;}
+  .data-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:24px;overflow-x:auto;}
+  .data-table table{width:100%;border-collapse:collapse;min-width:640px;}
+  .data-table thead tr{background:var(--surface2);}
+  .data-table th{padding:12px 14px;text-align:left;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;}
+  .data-table td{padding:13px 14px;border-top:1px solid var(--border);font-size:13px;vertical-align:middle;}
+  .data-table tr:hover td{background:rgba(255,255,255,.02);}
+  .vendedor-name{font-weight:600;display:flex;align-items:center;gap:10px;}
+  .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .mini-bar{display:flex;align-items:center;gap:6px;}
+  .mini-bar-track{flex:1;background:var(--surface2);border-radius:3px;height:4px;min-width:44px;}
+  .mini-bar-fill{height:100%;border-radius:3px;}
+  .mini-val{font-size:12px;font-weight:600;}
+  .mini-pct{font-size:10px;color:var(--muted);min-width:28px;}
+  .ranking-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:24px;}
+  .ranking-section h3{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+  .ranking-list{display:flex;flex-direction:column;gap:8px;}
+  .rank-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+  .rank-num{font-family:'Bebas Neue',sans-serif;font-size:22px;width:28px;text-align:center;}
+  .rank-num.gold{color:#FFD700;}.rank-num.silver{color:#C0C0C0;}.rank-num.bronze{color:#CD7F32;}
+  .rank-name{flex:1;font-weight:500;}
+  .rank-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--rojo);text-align:right;}
+  .rank-sub{font-size:11px;color:var(--muted);text-align:right;}
+  .section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:16px;}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;align-items:center;justify-content:center;padding:16px;}
+  .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:520px;max-width:100%;max-height:90vh;overflow-y:auto;}
+  .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:20px;}
+  .modal-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+  .modal-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:8px;}
+  .modal-section{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:4px;}
+  .divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+  /* CANAL */
+  .canal-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .canal-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+  .canal-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .canal-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+  .canal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;}
+  .canal-subtitle{font-size:12px;color:var(--muted);}
+  .canal-stat{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .canal-stat:last-child{border-bottom:none;}
+  /* ZONAS */
+  .zona-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-bottom:24px;}
+  .zona-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;}
+  .zona-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .zona-card.norte::before{background:var(--norte);}
+  .zona-card.sur::before{background:var(--sur);}
+  .zona-card.este::before{background:var(--este);}
+  .zona-card.centro::before{background:var(--centro);}
+  .zona-card.oeste::before{background:var(--oeste);}
+  .zona-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:2px;}
+  .zona-distritos{font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .zona-stat{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .zona-stat:last-of-type{border-bottom:none;}
+  .zona-stat-val{font-weight:600;}
+  .zona-vendedores{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;}
+  .zona-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;}
+  /* SUMMARY */
+  .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+  .sum-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .sum-val{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--rojo);}
+  .sum-label{font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+  /* FILTER PILLS */
+  .filter-pills{display:flex;gap:8px;flex-wrap:wrap;}
+  .pill{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--muted);transition:all .2s;user-select:none;}
+  .pill.act{background:var(--surface2);color:var(--text);border-color:var(--muted);}
+  .toast{position:fixed;bottom:28px;right:28px;background:var(--verde);color:white;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .empty-state{text-align:center;padding:36px;color:var(--muted);font-size:14px;}
+  @media(max-width:900px){.canal-compare{grid-template-columns:1fr;}}
+  @media(max-width:700px){.kpi-grid,.kpi-grid-3,.summary-row{grid-template-columns:repeat(2,1fr);}header{padding:12px 16px;}.view{padding:16px;}.kpi-value{font-size:28px;}}
+  @media(max-width:420px){.kpi-grid,.kpi-grid-3,.summary-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Fuerza<span>Ventas</span></div>
+  <div class="date-pill" id="headerDate"></div>
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('vendedor',this)">🧍 Mi Panel</div>
+  <div class="tab" onclick="switchTab('supervisor',this)">📊 Equipo</div>
+  <div class="tab" onclick="switchTab('gerencia',this)">🏢 Gerencia</div>
+</div>
+
+<!-- VENDEDOR -->
+<div class="view active" id="view-vendedor">
+  <div class="selector-bar">
+    <label>Vendedor:</label>
+    <select id="vendedorSelect" onchange="loadVendedor()"><option value="">— Seleccionar —</option></select>
+    <div class="period-toggle" id="ptV">
+      <div class="period-btn active" onclick="setPeriod('dia',this)">Hoy</div>
+      <div class="period-btn" onclick="setPeriod('semana',this)">Semana</div>
+    </div>
+  </div>
+  <div id="vendedorContent"><div class="empty-state">Selecciona un vendedor para ver su panel.</div></div>
+</div>
+
+<!-- SUPERVISOR -->
+<div class="view" id="view-supervisor">
+  <div class="selector-bar">
+    <div class="period-toggle" id="ptS">
+      <div class="period-btn active" onclick="setPeriodSup('dia',this)">Hoy</div>
+      <div class="period-btn" onclick="setPeriodSup('semana',this)">Semana</div>
+    </div>
+    <button class="btn btn-sm" onclick="openModal('modalVendedor')">+ Agregar Vendedor</button>
+  </div>
+  <div class="section-title">EQUIPO COMPLETO</div>
+  <div class="data-table"><table>
+    <thead><tr><th>Vendedor</th><th>Canal</th><th>Zona</th><th>Ventas</th><th>Efectividad</th><th>Clientes</th><th>Nuevos</th><th>SKUs</th><th>Ped.✓</th><th>Estado</th></tr></thead>
+    <tbody id="teamBody"><tr><td colspan="10" class="empty-state">Sin vendedores.</td></tr></tbody>
+  </table></div>
+  <div class="ranking-section">
+    <h3>🏆 Ranking — Ventas del período</h3>
+    <div class="ranking-list" id="rankingList"><div class="empty-state">Sin datos aún.</div></div>
+  </div>
+</div>
+
+<!-- GERENCIA -->
+<div class="view" id="view-gerencia">
+  <div class="selector-bar">
+    <div class="period-toggle" id="ptG">
+      <div class="period-btn active" onclick="setPeriodGer('dia',this)">Hoy</div>
+      <div class="period-btn" onclick="setPeriodGer('semana',this)">Semana</div>
+    </div>
+  </div>
+  <div class="section-title">RESUMEN GENERAL</div>
+  <div class="summary-row" id="gerSummary"></div>
+  <div class="section-title">POR CANAL DE VENTA</div>
+  <div class="canal-compare" id="gerCanal"></div>
+  <div class="section-title">POR ZONA GEOGRÁFICA — LIMA</div>
+  <div class="zona-grid" id="gerZonas"></div>
+  <div class="section-title">DETALLE POR VENDEDOR</div>
+  <div class="filter-pills" id="filterPills" style="margin-bottom:16px;"></div>
+  <div class="data-table"><table>
+    <thead><tr><th>Vendedor</th><th>Canal</th><th>Zona</th><th>Ventas</th><th>Efectividad</th><th>Clientes</th><th>SKUs</th><th>Ped.✓</th><th>Estado</th></tr></thead>
+    <tbody id="gerBody"><tr><td colspan="9" class="empty-state">Sin datos.</td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- MODAL: Agregar Vendedor -->
+<div class="modal-backdrop" id="modalVendedor">
+  <div class="modal-box">
+    <div class="modal-title">NUEVO VENDEDOR</div>
+    <div style="margin-bottom:14px;"><div class="input-group"><label>Nombre completo</label><input type="text" id="nNombre" placeholder="Ej: Carlos Quispe" style="width:100%"></div></div>
+    <div class="modal-grid-2">
+      <div class="input-group"><label>Canal de venta</label><select id="nCanal" style="width:100%"><option value="Tradicional">🏪 Tradicional</option><option value="Moderno">🏬 Moderno</option></select></div>
+      <div class="input-group"><label>Zona</label><select id="nZona" style="width:100%"><option value="Norte">🔴 Norte</option><option value="Sur">🟢 Sur</option><option value="Este">🟡 Este</option><option value="Centro">🟣 Centro</option><option value="Oeste">🔵 Oeste</option></select></div>
+    </div>
+    <hr class="divider">
+    <div class="modal-section">Metas diarias</div>
+    <div class="modal-grid-3">
+      <div class="input-group"><label>Ventas (S/)</label><input type="number" id="nMVentas" placeholder="5000"></div>
+      <div class="input-group"><label>Clientes</label><input type="number" id="nMClientes" placeholder="25"></div>
+      <div class="input-group"><label>SKUs</label><input type="number" id="nMSkus" placeholder="15"></div>
+    </div>
+    <div class="modal-grid-3">
+      <div class="input-group"><label>Efectividad (%)</label><input type="number" id="nMEfectividad" placeholder="80"></div>
+      <div class="input-group"><label>Nuevos clientes</label><input type="number" id="nMNuevos" placeholder="3"></div>
+      <div class="input-group"><label>Pedidos perf. (%)</label><input type="number" id="nMPerfectos" placeholder="95"></div>
+    </div>
+    <div class="modal-grid-2">
+      <div class="input-group"><label>Ticket promedio (S/)</label><input type="number" id="nMTicket" placeholder="200"></div>
+      <div class="input-group"><label>Devoluciones máx. (S/)</label><input type="number" id="nMDevol" placeholder="150"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalVendedor')">Cancelar</button>
+      <button class="btn" onclick="addVendedor()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Registrar -->
+<div class="modal-backdrop" id="modalResultado">
+  <div class="modal-box">
+    <div class="modal-title">REGISTRAR RESULTADOS</div>
+    <p id="modalRNombre" style="color:var(--muted);font-size:13px;margin-top:-14px;margin-bottom:18px;"></p>
+    <div class="modal-section">Ventas y cobertura</div>
+    <div class="modal-grid-3">
+      <div class="input-group"><label>Ventas (S/)</label><input type="number" id="rVentas" placeholder="0"></div>
+      <div class="input-group"><label>Clientes visitados</label><input type="number" id="rClientes" placeholder="0"></div>
+      <div class="input-group"><label>Clientes que compraron</label><input type="number" id="rClientesC" placeholder="0"></div>
+    </div>
+    <p class="input-hint">Efectividad y ticket promedio se calculan automáticamente.</p>
+    <div class="modal-grid-2">
+      <div class="input-group"><label>SKUs colocados</label><input type="number" id="rSkus" placeholder="0"></div>
+      <div class="input-group"><label>Nuevos clientes</label><input type="number" id="rNuevos" placeholder="0"></div>
+    </div>
+    <hr class="divider">
+    <div class="modal-section">Calidad de entrega</div>
+    <div class="modal-grid-3">
+      <div class="input-group"><label>Devoluciones (S/)</label><input type="number" id="rDevol" placeholder="0"></div>
+      <div class="input-group"><label>Quiebres de stock</label><input type="number" id="rQuiebres" placeholder="0"></div>
+      <div class="input-group"><label>Pedidos entregados</label><input type="number" id="rPedT" placeholder="0"></div>
+    </div>
+    <div class="modal-grid-2">
+      <div class="input-group"><label>Pedidos perfectos</label><input type="number" id="rPedP" placeholder="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalResultado')">Cancelar</button>
+      <button class="btn" onclick="guardarResultado()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const COLORS=['#E8232A','#1A73E8','#00C48C','#F5C518','#9B59B6','#E67E22','#0EA5E9','#EC4899','#14B8A6','#F43F5E'];
+const ZONAS=['Norte','Sur','Este','Centro','Oeste'];
+const ZCSS={Norte:'norte',Sur:'sur',Este:'este',Centro:'centro',Oeste:'oeste'};
+const ZCOL={Norte:'var(--norte)',Sur:'var(--sur)',Este:'var(--este)',Centro:'var(--centro)',Oeste:'var(--oeste)'};
+const ZINFO={Norte:'Comas, Los Olivos, Independencia',Sur:'Chorrillos, Villa María, SJM',Este:'ATE, SJL, El Agustino',Centro:'Cercado, Breña, La Victoria',Oeste:'Miraflores, San Isidro, Surco'};
+
+let vendedores=JSON.parse(localStorage.getItem('fv4')||'[]');
+let period='dia',periodSup='dia',periodGer='dia',selId=null,gerFilter='todos';
+function save(){localStorage.setItem('fv4',JSON.stringify(vendedores));}
+function todayKey(){const d=new Date();return 'D'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function weekKey(){const d=new Date(),m=new Date(d);m.setDate(d.getDate()-((d.getDay()+6)%7));return 'W'+m.getFullYear()+'-'+(m.getMonth()+1)+'-'+m.getDate();}
+function pKey(p){return p==='dia'?todayKey():weekKey();}
+document.getElementById('headerDate').textContent=new Date().toLocaleDateString('es-PE',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+function switchTab(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('view-'+tab).classList.add('active');
+  if(tab==='supervisor')renderTeam();
+  if(tab==='gerencia')renderGerencia();
+}
+function setPeriod(p,el){period=p;document.querySelectorAll('#ptV .period-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');loadVendedor();}
+function setPeriodSup(p,el){periodSup=p;document.querySelectorAll('#ptS .period-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTeam();}
+function setPeriodGer(p,el){periodGer=p;document.querySelectorAll('#ptG .period-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderGerencia();}
+
+function populateSelect(){
+  const sel=document.getElementById('vendedorSelect'),cur=sel.value;
+  sel.innerHTML='<option value="">— Seleccionar —</option>';
+  vendedores.forEach(v=>{const o=document.createElement('option');o.value=v.id;o.textContent=v.nombre;sel.appendChild(o);});
+  if(cur)sel.value=cur;
+}
+function gm(v,p){
+  const key=pKey(p),E=(v.registros||[]).filter(r=>r.key===key);
+  const sum=f=>E.reduce((s,r)=>s+(r[f]||0),0);
+  const ventas=sum('ventas'),clientes=sum('clientes'),clientesC=sum('clientesC'),skus=sum('skus'),nuevos=sum('nuevos'),devol=sum('devol'),quiebres=sum('quiebres'),pedT=sum('pedT'),pedP=sum('pedP');
+  return{ventas,clientes,clientesC,skus,nuevos,devol,quiebres,pedT,pedP,
+    efectividad:clientes>0?Math.round(clientesC/clientes*100):0,
+    ticket:clientesC>0?Math.round(ventas/clientesC):0,
+    pctPerf:pedT>0?Math.round(pedP/pedT*100):0};
+}
+function gmeta(v,p){
+  const f=p==='semana'?5:1;
+  return{ventas:(v.mVentas||0)*f,clientes:(v.mClientes||0)*f,skus:(v.mSkus||0)*f,efectividad:v.mEfectividad||80,ticket:v.mTicket||200,nuevos:(v.mNuevos||0)*f,devol:(v.mDevol||0)*f,perfectos:v.mPerfectos||95};
+}
+const pct=(v,m)=>!m?0:Math.min(100,Math.round(v/m*100));
+const pctI=(v,m)=>!m?(v===0?100:0):v===0?100:Math.max(0,Math.min(100,Math.round((1-v/m)*100)));
+const S=n=>'S/ '+n.toLocaleString('es-PE');
+const ini=n=>n.split(' ').map(x=>x[0]).join('').slice(0,2);
+function bpct(p){if(p>=100)return '<span class="badge badge-green">✓ META</span>';if(p>=60)return '<span class="badge badge-yellow">En curso</span>';return '<span class="badge badge-red">Bajo</span>';}
+function card(cls,icon,lbl,val,sub,pv){return '<div class="kpi-card '+cls+'"><div class="kpi-label">'+lbl+'</div><div class="kpi-icon">'+icon+'</div><div class="kpi-value">'+val+'</div><div class="kpi-sub">'+sub+'</div><div class="progress-track"><div class="progress-fill" style="width:'+pv+'%"></div></div><div class="progress-pct">'+pv+'%</div></div>';}
+function mbar(pv,lbl,color){return '<div><div class="mini-val">'+lbl+'</div><div class="mini-bar"><div class="mini-bar-track"><div class="mini-bar-fill" style="width:'+pv+'%;background:'+color+';"></div></div><span class="mini-pct">'+pv+'%</span></div></div>';}
+function ccolor(c){return c==='Moderno'?'var(--mod)':'var(--trad)';}
+
+function loadVendedor(){
+  const id=document.getElementById('vendedorSelect').value,cont=document.getElementById('vendedorContent');
+  if(!id){cont.innerHTML='<div class="empty-state">Selecciona un vendedor para ver su panel.</div>';return;}
+  selId=id;const v=vendedores.find(x=>x.id===id);if(!v)return;
+  const m=gm(v,period),mt=gmeta(v,period),pl=period==='dia'?'hoy':'esta semana';
+  const pV=pct(m.ventas,mt.ventas),pC=pct(m.clientes,mt.clientes),pS=pct(m.skus,mt.skus);
+  const pE=pct(m.efectividad,mt.efectividad),pT=pct(m.ticket,mt.ticket),pN=pct(m.nuevos,mt.nuevos);
+  const pD=pctI(m.devol,mt.devol),pP=pct(m.pctPerf,mt.perfectos);
+  const cc=ccolor(v.canal),zc=ZCOL[v.zona]||'var(--muted)';
+  cont.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;"><div style="display:flex;align-items:center;gap:12px;"><div class="avatar" style="background:'+v.color+'22;color:'+v.color+';width:44px;height:44px;font-size:16px;">'+ini(v.nombre)+'</div><div><div style="font-weight:600;font-size:17px;">'+v.nombre+'</div><div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;"><span class="badge" style="background:'+cc+'22;color:'+cc+';">'+(v.canal==='Moderno'?'🏬':'🏪')+' '+v.canal+'</span><span class="badge" style="background:'+zc+'22;color:'+zc+';">📍 '+v.zona+'</span></div></div></div><button class="btn" onclick="openModalResultado(\''+v.id+'\')">+ Registrar del día</button></div>'
+  +'<div class="kpi-section-label">Ventas y cobertura</div><div class="kpi-grid">'+card('ventas','💰','Ventas',S(m.ventas),'Meta: <strong>'+S(mt.ventas)+'</strong>',pV)+card('clientes','🏪','Clientes Visitados',m.clientes,'Meta: <strong>'+mt.clientes+' tiendas</strong>',pC)+card('skus','📦','SKUs Colocados',m.skus,'Meta: <strong>'+mt.skus+' SKUs</strong>',pS)+'</div>'
+  +'<div class="kpi-section-label">Productividad</div><div class="kpi-grid">'+card('efectividad','🎯','Efectividad',m.efectividad+'%',m.clientesC+' compraron de '+m.clientes+' — Meta: <strong>'+mt.efectividad+'%</strong>',pE)+card('ticket','💳','Ticket Promedio',S(m.ticket),'Meta: <strong>'+S(mt.ticket)+'</strong> por cliente',pT)+card('nuevos','⭐','Nuevos Clientes',m.nuevos,'Meta: <strong>'+mt.nuevos+' nuevos</strong>',pN)+'</div>'
+  +'<div class="kpi-section-label">Calidad de entrega</div><div class="kpi-grid-3">'+card('devoluciones','↩️','Devoluciones',S(m.devol),'Máx: <strong>'+S(mt.devol)+'</strong> · menos es mejor',pD)+card('quiebre','⚠️','Quiebres de Stock',m.quiebres,'Reportados '+pl,100)+card('perfectos','✅','Pedidos Perfectos',m.pctPerf+'%',m.pedP+' de '+m.pedT+' — Meta: <strong>'+mt.perfectos+'%</strong>',pP)+'</div>'
+  +'<div class="input-section"><h3>📋 Historial ('+pl+')</h3>'+historial(v)+'</div>';
+}
+
+function historial(v){
+  const key=pKey(period),E=(v.registros||[]).filter(r=>r.key===key).slice().reverse();
+  if(!E.length)return '<div style="color:var(--muted);font-size:13px;padding:8px 0">Sin registros aún.</div>';
+  return E.map(r=>{const ef=r.clientes>0?Math.round(r.clientesC/r.clientes*100):0,pp=r.pedT>0?Math.round(r.pedP/r.pedT*100)+'%':'—';
+    return '<div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap;align-items:center;"><span style="color:var(--muted);min-width:52px;">'+r.hora+'</span><span>💰 '+S(r.ventas)+'</span><span>🏪 '+r.clientes+' vis./'+r.clientesC+' comp. <em style="color:var(--celeste)">('+ef+'%)</em></span><span>⭐ '+r.nuevos+'</span><span>📦 '+r.skus+'</span><span>↩️ '+S(r.devol)+'</span><span>⚠️ '+r.quiebres+'</span><span>✅ '+pp+'</span></div>';}).join('');
+}
+
+function renderTeam(){
+  const tbody=document.getElementById('teamBody'),rl=document.getElementById('rankingList');
+  if(!vendedores.length){tbody.innerHTML='<tr><td colspan="10" class="empty-state">Agrega vendedores arriba.</td></tr>';rl.innerHTML='<div class="empty-state">Sin datos.</div>';return;}
+  const rows=vendedores.map(v=>{const m=gm(v,periodSup),mt=gmeta(v,periodSup);
+    const avg=Math.round((pct(m.ventas,mt.ventas)+pct(m.efectividad,mt.efectividad)+pct(m.clientes,mt.clientes)+pct(m.skus,mt.skus)+pct(m.pctPerf,mt.perfectos))/5);
+    return{v,m,mt,avg,pV:pct(m.ventas,mt.ventas),pE:pct(m.efectividad,mt.efectividad),pC:pct(m.clientes,mt.clientes),pN:pct(m.nuevos,mt.nuevos),pS:pct(m.skus,mt.skus),pP:pct(m.pctPerf,mt.perfectos)};
+  }).sort((a,b)=>b.m.ventas-a.m.ventas);
+  tbody.innerHTML=rows.map(({v,m,avg,pV,pE,pC,pN,pS,pP})=>'<tr><td><div class="vendedor-name"><div class="avatar" style="background:'+v.color+'22;color:'+v.color+';">'+ini(v.nombre)+'</div>'+v.nombre+'</div></td><td><span class="badge" style="background:'+ccolor(v.canal)+'22;color:'+ccolor(v.canal)+';">'+(v.canal==='Moderno'?'🏬':'🏪')+' '+v.canal+'</span></td><td><span class="badge" style="background:'+ZCOL[v.zona]+'22;color:'+ZCOL[v.zona]+';">📍 '+v.zona+'</span></td><td>'+mbar(pV,S(m.ventas),'var(--rojo)')+'</td><td>'+mbar(pE,m.efectividad+'%','var(--celeste)')+'</td><td>'+mbar(pC,m.clientes+'','var(--amarillo)')+'</td><td>'+mbar(pN,m.nuevos+'','var(--rosa)')+'</td><td>'+mbar(pS,m.skus+'','var(--verde)')+'</td><td>'+mbar(pP,m.pctPerf+'%','var(--verde)')+'</td><td>'+bpct(avg)+'</td></tr>').join('');
+  const med=['gold','silver','bronze'],emo=['🥇','🥈','🥉'];
+  rl.innerHTML=rows.slice(0,5).map(({v,m},i)=>'<div class="rank-item"><div class="rank-num '+(med[i]||'')+'">'+( emo[i]||(i+1))+'</div><div class="avatar" style="background:'+v.color+'22;color:'+v.color+';">'+ini(v.nombre)+'</div><div class="rank-name">'+v.nombre+'<div style="font-size:11px;color:var(--muted);">'+v.canal+' · '+v.zona+'</div></div><div><div class="rank-score">'+S(m.ventas)+'</div><div class="rank-sub">Efectividad '+m.efectividad+'%</div></div></div>').join('');
+}
+
+function renderGerencia(){
+  const p=periodGer;
+  if(!vendedores.length){
+    document.getElementById('gerSummary').innerHTML='<div class="empty-state" style="grid-column:1/-1">Agrega vendedores en la vista Equipo.</div>';
+    document.getElementById('gerCanal').innerHTML='';document.getElementById('gerZonas').innerHTML='';
+    document.getElementById('gerBody').innerHTML='<tr><td colspan="9" class="empty-state">Sin datos.</td></tr>';return;
+  }
+  const allM=vendedores.map(v=>gm(v,p));
+  const totV=allM.reduce((s,m)=>s+m.ventas,0),totC=allM.reduce((s,m)=>s+m.clientes,0),totN=allM.reduce((s,m)=>s+m.nuevos,0);
+  const avgE=allM.length?Math.round(allM.reduce((s,m)=>s+m.efectividad,0)/allM.length):0;
+  document.getElementById('gerSummary').innerHTML='<div class="sum-card"><div class="sum-val">'+S(totV)+'</div><div class="sum-label">Ventas totales</div></div><div class="sum-card"><div class="sum-val">'+totC+'</div><div class="sum-label">Clientes visitados</div></div><div class="sum-card"><div class="sum-val">'+avgE+'%</div><div class="sum-label">Efectividad prom.</div></div><div class="sum-card"><div class="sum-val">'+totN+'</div><div class="sum-label">Nuevos clientes</div></div>';
+
+  let cHTML='';
+  ['Tradicional','Moderno'].forEach(canal=>{
+    const vC=vendedores.filter(v=>v.canal===canal),mC=vC.map(v=>gm(v,p));
+    const cv=mC.reduce((s,m)=>s+m.ventas,0),cc=mC.reduce((s,m)=>s+m.clientes,0),cs=mC.reduce((s,m)=>s+m.skus,0),cn=mC.reduce((s,m)=>s+m.nuevos,0),cd=mC.reduce((s,m)=>s+m.devol,0);
+    const ce=mC.length?Math.round(mC.reduce((s,m)=>s+m.efectividad,0)/mC.length):0;
+    const cp=mC.length?Math.round(mC.reduce((s,m)=>s+m.pctPerf,0)/mC.length):0;
+    const col=ccolor(canal),icon=canal==='Moderno'?'🏬':'🏪',cls=canal==='Moderno'?'canal-mod':'canal-trad';
+    cHTML+='<div class="canal-block"><div class="canal-header"><div class="canal-dot" style="background:'+col+';"></div><div><div class="canal-title">'+icon+' '+canal.toUpperCase()+'</div><div class="canal-subtitle">'+vC.length+' vendedor'+(vC.length!==1?'es':'')+'</div></div></div>'
+      +'<div class="kpi-grid-2">'+card(cls,'💰','Ventas totales',S(cv),vC.length+' vendedores',100)+card(cls,'🎯','Efectividad prom.',ce+'%','Promedio del canal',ce)+'</div>'
+      +'<div style="margin-top:12px;">'+[['🏪 Clientes',cc],['📦 SKUs',cs],['⭐ Nuevos',cn],['↩️ Devoluciones',S(cd)],['✅ Pedidos perf.',cp+'%']].map(([l,val])=>'<div class="canal-stat"><span style="color:var(--muted);">'+l+'</span><span style="font-weight:600;">'+val+'</span></div>').join('')+'</div></div>';
+  });
+  document.getElementById('gerCanal').innerHTML=cHTML;
+
+  let zHTML='';
+  ZONAS.forEach(zona=>{
+    const vZ=vendedores.filter(v=>v.zona===zona),mZ=vZ.map(v=>gm(v,p));
+    const zv=mZ.reduce((s,m)=>s+m.ventas,0),zc=mZ.reduce((s,m)=>s+m.clientes,0),zn=mZ.reduce((s,m)=>s+m.nuevos,0);
+    const ze=mZ.length?Math.round(mZ.reduce((s,m)=>s+m.efectividad,0)/mZ.length):0;
+    const cls=ZCSS[zona],col=ZCOL[zona];
+    const chips=vZ.map(v=>'<span class="zona-chip" style="background:'+v.color+'22;color:'+v.color+';">'+ini(v.nombre)+'</span>').join('');
+    zHTML+='<div class="zona-card '+cls+'"><div class="zona-name" style="color:'+col+';">'+zona.toUpperCase()+'</div><div class="zona-distritos">'+ZINFO[zona]+'</div>'
+      +'<div class="zona-stat"><span>💰 Ventas</span><span class="zona-stat-val" style="color:'+col+';">'+S(zv)+'</span></div>'
+      +'<div class="zona-stat"><span>🏪 Clientes</span><span class="zona-stat-val">'+zc+'</span></div>'
+      +'<div class="zona-stat"><span>🎯 Efectividad</span><span class="zona-stat-val">'+ze+'%</span></div>'
+      +'<div class="zona-stat"><span>⭐ Nuevos</span><span class="zona-stat-val">'+zn+'</span></div>'
+      +'<div class="zona-stat"><span>👤 Vendedores</span><span class="zona-stat-val">'+vZ.length+'</span></div>'
+      +(vZ.length?'<div class="zona-vendedores">'+chips+'</div>':'<div style="color:var(--muted);font-size:12px;margin-top:10px;">Sin vendedores asignados</div>')+'</div>';
+  });
+  document.getElementById('gerZonas').innerHTML=zHTML;
+
+  // Build filter pills
+  const pillDefs=[{f:'todos',lbl:'Todos'},{f:'Tradicional',lbl:'🏪 Tradicional'},{f:'Moderno',lbl:'🏬 Moderno'},{f:'Norte',lbl:'🔴 Norte'},{f:'Sur',lbl:'🟢 Sur'},{f:'Este',lbl:'🟡 Este'},{f:'Centro',lbl:'🟣 Centro'},{f:'Oeste',lbl:'🔵 Oeste'}];
+  document.getElementById('filterPills').innerHTML=pillDefs.map(({f,lbl})=>'<div class="pill'+(f===gerFilter?' act':'')+'" onclick="setGerFilter(\''+f+'\',this)">'+lbl+'</div>').join('');
+  renderGerTable();
+}
+
+function setGerFilter(f,el){gerFilter=f;document.querySelectorAll('#filterPills .pill').forEach(p=>p.classList.remove('act'));el.classList.add('act');renderGerTable();}
+
+function renderGerTable(){
+  const p=periodGer,f=gerFilter;
+  const vF=vendedores.filter(v=>f==='todos'?true:(f==='Tradicional'||f==='Moderno')?v.canal===f:v.zona===f);
+  if(!vF.length){document.getElementById('gerBody').innerHTML='<tr><td colspan="9" class="empty-state">Sin vendedores para este filtro.</td></tr>';return;}
+  const rows=vF.map(v=>{const m=gm(v,p),mt=gmeta(v,p);
+    const avg=Math.round((pct(m.ventas,mt.ventas)+pct(m.efectividad,mt.efectividad)+pct(m.clientes,mt.clientes)+pct(m.skus,mt.skus)+pct(m.pctPerf,mt.perfectos))/5);
+    return{v,m,avg,pV:pct(m.ventas,mt.ventas),pE:pct(m.efectividad,mt.efectividad),pC:pct(m.clientes,mt.clientes),pS:pct(m.skus,mt.skus),pP:pct(m.pctPerf,mt.perfectos)};
+  }).sort((a,b)=>b.m.ventas-a.m.ventas);
+  document.getElementById('gerBody').innerHTML=rows.map(({v,m,avg,pV,pE,pC,pS,pP})=>'<tr><td><div class="vendedor-name"><div class="avatar" style="background:'+v.color+'22;color:'+v.color+';">'+ini(v.nombre)+'</div>'+v.nombre+'</div></td><td><span class="badge" style="background:'+ccolor(v.canal)+'22;color:'+ccolor(v.canal)+';">'+(v.canal==='Moderno'?'🏬':'🏪')+' '+v.canal+'</span></td><td><span class="badge" style="background:'+ZCOL[v.zona]+'22;color:'+ZCOL[v.zona]+';">📍 '+v.zona+'</span></td><td>'+mbar(pV,S(m.ventas),'var(--rojo)')+'</td><td>'+mbar(pE,m.efectividad+'%','var(--celeste)')+'</td><td>'+mbar(pC,m.clientes+'','var(--amarillo)')+'</td><td>'+mbar(pS,m.skus+'','var(--verde)')+'</td><td>'+mbar(pP,m.pctPerf+'%','var(--verde)')+'</td><td>'+bpct(avg)+'</td></tr>').join('');
+}
+
+function openModal(id){document.getElementById(id).style.display='flex';}
+function closeModal(id){document.getElementById(id).style.display='none';document.getElementById(id).querySelectorAll('input').forEach(i=>i.value='');}
+
+function addVendedor(){
+  const nombre=document.getElementById('nNombre').value.trim();
+  if(!nombre){showToast('Ingresa el nombre',true);return;}
+  vendedores.push({id:Date.now().toString(),nombre,color:COLORS[vendedores.length%COLORS.length],registros:[],
+    canal:document.getElementById('nCanal').value,zona:document.getElementById('nZona').value,
+    mVentas:parseFloat(document.getElementById('nMVentas').value)||5000,
+    mClientes:parseInt(document.getElementById('nMClientes').value)||25,
+    mSkus:parseInt(document.getElementById('nMSkus').value)||15,
+    mEfectividad:parseInt(document.getElementById('nMEfectividad').value)||80,
+    mNuevos:parseInt(document.getElementById('nMNuevos').value)||3,
+    mPerfectos:parseInt(document.getElementById('nMPerfectos').value)||95,
+    mTicket:parseFloat(document.getElementById('nMTicket').value)||200,
+    mDevol:parseFloat(document.getElementById('nMDevol').value)||150});
+  save();populateSelect();closeModal('modalVendedor');renderTeam();showToast(nombre+' agregado ✓');
+}
+function openModalResultado(id){selId=id;const v=vendedores.find(x=>x.id===id);document.getElementById('modalRNombre').textContent=v.nombre+' · '+v.canal+' · Zona '+v.zona;openModal('modalResultado');}
+function guardarResultado(){
+  const v=vendedores.find(x=>x.id===selId);if(!v)return;
+  const now=new Date();
+  v.registros.push({key:todayKey(),wkey:weekKey(),hora:now.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}),
+    ventas:parseFloat(document.getElementById('rVentas').value)||0,clientes:parseInt(document.getElementById('rClientes').value)||0,
+    clientesC:parseInt(document.getElementById('rClientesC').value)||0,skus:parseInt(document.getElementById('rSkus').value)||0,
+    nuevos:parseInt(document.getElementById('rNuevos').value)||0,devol:parseFloat(document.getElementById('rDevol').value)||0,
+    quiebres:parseInt(document.getElementById('rQuiebres').value)||0,pedT:parseInt(document.getElementById('rPedT').value)||0,
+    pedP:parseInt(document.getElementById('rPedP').value)||0});
+  save();closeModal('modalResultado');loadVendedor();showToast('Resultados guardados ✓');
+}
+function showToast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.style.background=err?'var(--rojo)':'var(--verde)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+populateSelect();
+</script>
+</body>
+</html>
